@@ -162,20 +162,33 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
         </div>
       </div>
 
-      <div className="border-t border-border bg-card/50 px-4 py-3">
-        <div className="max-w-3xl mx-auto flex gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            rows={1}
-            className="flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            disabled={isStreaming}
-          />
-          <Button size="icon" onClick={sendMessage} disabled={isStreaming || !input.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
+      <div className="px-4 py-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="rounded-2xl border border-border bg-background shadow-sm focus-within:border-primary/40 transition-colors">
+            <textarea
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                const t = e.target as HTMLTextAreaElement;
+                t.style.height = "auto";
+                t.style.height = Math.min(t.scrollHeight, 160) + "px";
+              }}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask Anything..."
+              rows={1}
+              className="w-full resize-none bg-transparent px-4 pt-3 pb-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none leading-relaxed"
+              disabled={isStreaming}
+            />
+            <div className="flex items-center justify-end px-3 pb-2">
+              <button
+                onClick={sendMessage}
+                disabled={isStreaming || !input.trim()}
+                className="p-1.5 rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground disabled:opacity-40 disabled:hover:bg-muted disabled:hover:text-muted-foreground transition-colors"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
