@@ -73,7 +73,56 @@ export function RightPanel() {
                     <span className="text-[10px] font-medium text-muted-foreground">Email {i + 1}</span>
                   </div>
                   <h4 className="text-sm font-medium text-foreground mb-1">{email.subject}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{email.preview}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">{email.preview}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      if (artifactData.assetType === "roadmap") {
+        const programName = content.programName as string;
+        const description = content.description as string;
+        const phases = (content.phases as Array<{
+          label: string;
+          name: string;
+          steps: Array<{ name: string; description: string }>;
+        }>) || [];
+        return (
+          <div>
+            {/* Header */}
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-foreground mb-2">{programName}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+            </div>
+
+            {/* Phases Grid */}
+            <div className="grid grid-cols-3 gap-3">
+              {phases.map((phase, pi) => (
+                <div key={pi} className="flex flex-col">
+                  {/* Phase Header */}
+                  <div className="rounded-t-lg bg-foreground px-3 py-2.5 mb-0">
+                    <span className="text-[10px] uppercase tracking-wider text-background/60 block">Phase {pi + 1}</span>
+                    <h3 className="text-sm font-bold text-background">{phase.name}</h3>
+                  </div>
+
+                  {/* Steps */}
+                  <div className="border border-border border-t-0 rounded-b-lg divide-y divide-border">
+                    {phase.steps.map((step, si) => (
+                      <div key={si} className="px-3 py-3">
+                        <div className="flex items-start gap-2">
+                          <div className="w-5 h-5 rounded border border-border flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-[9px] font-bold text-muted-foreground">{pi * 3 + si + 1}</span>
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-semibold text-foreground mb-0.5">{step.name}</h4>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{step.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
