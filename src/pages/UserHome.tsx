@@ -17,7 +17,7 @@ const ENGINES = [
     emoji: "✏️",
     title: "Content Engine",
     subtitle: "Execution",
-    steps: ["Lead Magnet", "Workshop", "Nurture Sequence"],
+    steps: ["Lead Magnet", "Workshop", "Nurture"],
     enabled: false,
   },
   {
