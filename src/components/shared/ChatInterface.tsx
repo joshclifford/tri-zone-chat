@@ -172,18 +172,19 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
                 metadata: {
                   artifact: {
                     id: "demo-1",
-                    title: "The Cold Email Checklist",
-                    preview: "A 10-point framework for writing high-converting cold emails that get replies, not spam reports.",
-                    assetType: "lead-magnet",
+                    title: "Cold Emails",
+                    preview: "Two high-converting cold email examples ready to customize and send.",
+                    assetType: "email-sequence",
                     content: {
-                      title: "The Cold Email Checklist",
-                      format: "PDF Checklist",
-                      sections: [
-                        { heading: "1. Subject Line Formula", body: "Use the 3-word curiosity gap: hint at value without revealing it. Example: 'Quick question about [prospect's company]'" },
-                        { heading: "2. Opening Line", body: "Reference something specific about the recipient — a recent post, company news, or mutual connection. Never start with 'I hope this finds you well.'" },
-                        { heading: "3. Value Proposition", body: "One sentence: what you do + who you help + the result. Example: 'We help B2B SaaS companies cut churn by 30% in 90 days.'" },
-                        { heading: "4. Social Proof", body: "Name-drop one recognizable client or cite one specific metric. Keep it to one line." },
-                        { heading: "5. Call to Action", body: "Ask one simple yes/no question. 'Would it make sense to chat for 15 minutes this week?'" },
+                      emails: [
+                        {
+                          subject: "Quick question about {{company}}'s growth",
+                          preview: "Hi {{firstName}},\n\nI noticed {{company}} just expanded into {{market}} — congrats on the momentum.\n\nWe recently helped a similar company in your space cut their customer acquisition cost by 40% in 90 days using a repositioned offer strategy.\n\nWould it make sense to chat for 15 minutes this week to see if we could do something similar for you?\n\nEither way, excited to watch {{company}} grow.\n\nBest,\n{{yourName}}"
+                        },
+                        {
+                          subject: "Idea for {{company}} (took 2 min to put together)",
+                          preview: "Hi {{firstName}},\n\nI spent a couple minutes looking at {{company}}'s positioning and had an idea that could help you stand out in {{market}}.\n\nMost companies in your space lead with features — but your customers are buying a transformation. A small messaging shift could make a big difference in conversion.\n\nI put together a quick breakdown. Want me to send it over?\n\nNo pressure either way.\n\nCheers,\n{{yourName}}"
+                        }
                       ],
                     },
                   },
@@ -191,7 +192,7 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
               },
               {
                 role: "assistant" as const,
-                content: "Here's a sample lead magnet I generated. Click the card above to see the full document in the side panel. Does this direction look right?",
+                content: "Here are two cold email examples I generated. Click the card above to preview them in the side panel. Does this direction look right?",
                 type: "options" as const,
                 metadata: {
                   options: ["Looks good — Continue", "Make changes"],
