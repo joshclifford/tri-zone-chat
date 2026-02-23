@@ -12,17 +12,27 @@ interface WorkflowCardProps {
   workflow: WorkflowCardData;
   index: number;
   onSelect: (workflow: WorkflowCardData) => void;
+  disabled?: boolean;
 }
 
-export function WorkflowCard({ workflow, index, onSelect }: WorkflowCardProps) {
+export function WorkflowCard({ workflow, index, onSelect, disabled }: WorkflowCardProps) {
   return (
     <motion.button
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-      onClick={() => onSelect(workflow)}
-      className="group w-full text-left rounded-lg border border-border bg-card p-5 hover:border-primary/30 hover:shadow-sm transition-all duration-200"
+      onClick={() => !disabled && onSelect(workflow)}
+      className={`group w-full text-left rounded-lg border border-border bg-card p-5 transition-all duration-200 relative ${
+        disabled
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:border-primary/30 hover:shadow-sm cursor-pointer"
+      }`}
     >
+      {disabled && (
+        <span className="absolute top-2.5 right-2.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
+          V2
+        </span>
+      )}
       <div className="text-2xl mb-3">{workflow.emoji}</div>
       <h3 className="text-sm font-semibold text-foreground mb-1">{workflow.title}</h3>
       <p className="text-xs text-muted-foreground leading-relaxed mb-3">{workflow.description}</p>
