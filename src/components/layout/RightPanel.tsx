@@ -63,17 +63,28 @@ export function RightPanel() {
         const emails = (content.emails as Array<{ subject: string; preview: string }>) || [];
         return (
           <div>
-            <h2 className="text-base font-semibold text-foreground mb-4">
-              Email Sequence ({emails.length} emails)
+            <h2 className="text-base font-semibold text-foreground mb-1">
+              Cold Emails
             </h2>
-            <div className="space-y-3">
+            <p className="text-xs text-muted-foreground mb-5">{emails.length} emails ready to customize</p>
+            <div className="space-y-4">
               {emails.map((email, i) => (
-                <div key={i} className="rounded-lg border border-border p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-medium text-muted-foreground">Email {i + 1}</span>
+                <div key={i} className="rounded-lg border border-border overflow-hidden">
+                  {/* Email header bar */}
+                  <div className="bg-muted/30 px-4 py-2.5 border-b border-border flex items-center gap-2">
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Email {i + 1}</span>
                   </div>
-                  <h4 className="text-sm font-medium text-foreground mb-1">{email.subject}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">{email.preview}</p>
+                  {/* Subject line */}
+                  <div className="px-4 pt-3 pb-2 border-b border-border/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground shrink-0">Subject:</span>
+                      <span className="text-sm font-medium text-foreground">{email.subject}</span>
+                    </div>
+                  </div>
+                  {/* Email body */}
+                  <div className="px-4 py-4">
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{email.preview}</p>
+                  </div>
                 </div>
               ))}
             </div>
