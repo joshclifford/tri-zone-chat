@@ -172,31 +172,6 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
                 metadata: {
                   artifact: {
                     id: "demo-1",
-                    title: "Cold Emails",
-                    preview: "Two high-converting cold email examples ready to customize and send.",
-                    assetType: "email-sequence",
-                    content: {
-                      emails: [
-                        {
-                          subject: "Quick question about {{company}}'s growth",
-                          preview: "Hi {{firstName}},\n\nI noticed {{company}} just expanded into {{market}} — congrats on the momentum.\n\nWe recently helped a similar company in your space cut their customer acquisition cost by 40% in 90 days using a repositioned offer strategy.\n\nWould it make sense to chat for 15 minutes this week to see if we could do something similar for you?\n\nEither way, excited to watch {{company}} grow.\n\nBest,\n{{yourName}}"
-                        },
-                        {
-                          subject: "Idea for {{company}} (took 2 min to put together)",
-                          preview: "Hi {{firstName}},\n\nI spent a couple minutes looking at {{company}}'s positioning and had an idea that could help you stand out in {{market}}.\n\nMost companies in your space lead with features — but your customers are buying a transformation. A small messaging shift could make a big difference in conversion.\n\nI put together a quick breakdown. Want me to send it over?\n\nNo pressure either way.\n\nCheers,\n{{yourName}}"
-                        }
-                      ],
-                    },
-                  },
-                },
-              },
-              {
-                role: "assistant" as const,
-                content: "",
-                type: "artifact" as const,
-                metadata: {
-                  artifact: {
-                    id: "demo-2",
                     title: "Program Roadmap",
                     preview: "Your 3-phase transformation roadmap with 9 steps.",
                     assetType: "roadmap",
@@ -238,7 +213,37 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
               },
               {
                 role: "assistant" as const,
-                content: "I've also drafted your program roadmap. Click it to see the full 3-phase visual. Does this direction look right?",
+                content: "Here's your program roadmap — click it to see the full 3-phase visual. I've also drafted some cold emails below.",
+                type: "text" as const,
+              },
+              {
+                role: "assistant" as const,
+                content: "",
+                type: "artifact" as const,
+                metadata: {
+                  artifact: {
+                    id: "demo-2",
+                    title: "Cold Emails",
+                    preview: "Two high-converting cold email examples ready to customize and send.",
+                    assetType: "email-sequence",
+                    content: {
+                      emails: [
+                        {
+                          subject: "Quick question about {{company}}'s growth",
+                          preview: "Hi {{firstName}},\n\nI noticed {{company}} just expanded into {{market}} — congrats on the momentum.\n\nWe recently helped a similar company in your space cut their customer acquisition cost by 40% in 90 days using a repositioned offer strategy.\n\nWould it make sense to chat for 15 minutes this week to see if we could do something similar for you?\n\nEither way, excited to watch {{company}} grow.\n\nBest,\n{{yourName}}"
+                        },
+                        {
+                          subject: "Idea for {{company}} (took 2 min to put together)",
+                          preview: "Hi {{firstName}},\n\nI spent a couple minutes looking at {{company}}'s positioning and had an idea that could help you stand out in {{market}}.\n\nMost companies in your space lead with features — but your customers are buying a transformation. A small messaging shift could make a big difference in conversion.\n\nI put together a quick breakdown. Want me to send it over?\n\nNo pressure either way.\n\nCheers,\n{{yourName}}"
+                        }
+                      ],
+                    },
+                  },
+                },
+              },
+              {
+                role: "assistant" as const,
+                content: "Click either card to preview the full content. Does this direction look right?",
                 type: "options" as const,
                 metadata: {
                   options: ["Looks good — Continue", "Make changes"],
