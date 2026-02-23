@@ -1,29 +1,21 @@
 
-# Kimi-Style Chat: Remove Bubbles, Use Whitespace
+
+# Fix: Chat Input Bar Hidden Below Viewport
 
 ## Problem
-Chat messages use colored bubble backgrounds (`bg-primary` for user, `bg-muted` for assistant) with a narrow `max-w-[85%]` constraint, making text feel cramped. Kimi uses a clean, open layout with no bubble backgrounds -- just text with generous whitespace.
+The chat input bar is rendered in the code but pushed off-screen. The AI's opening message is very long, and the scroll container isn't properly constrained, causing the entire ChatInterface to overflow instead of scrolling internally.
 
-## Changes
+## Root Cause
+The layout chain uses flexbox, but `ChatInterface`'s root div uses `h-full` instead of `flex-1 min-h-0`. Without `min-h-0`, the flex child's content (the long message) forces the container to grow beyond the viewport, pushing the input bar out of view.
 
-### `src/components/interview/InterviewMessage.tsx`
-- **Remove bubble backgrounds** for both user and assistant messages
-- **Remove `max-w-[85%]`** constraint -- let messages use full container width
-- **Remove `rounded-xl` padding/background** styling
-- Assistant messages: left-aligned, no background, just text with prose styling
-- User messages: right-aligned, subtle text color differentiation (e.g. `text-muted-foreground`) instead of a colored bubble
-- Keep the fade-in animation
-- Increase text size from `text-sm` to `text-base` for better readability
+## Fix
 
 ### `src/components/shared/ChatInterface.tsx`
-- Widen the content container from `max-w-2xl` (672px) to `max-w-3xl` (768px) to give text more room
-- Same change on the input bar container
+- Change the root div from `h-full` to `flex-1 min-h-0` so it stays within its parent's bounds
+- This ensures the scrollable message area is constrained and the input bar stays pinned at the bottom
 
-### `src/components/interview/InterviewChat.tsx`
-- Widen `max-w-[700px]` to `max-w-3xl` (768px) to match
+### `src/pages/SkillChat.tsx`
+- Wrap the `ChatInterface` in a `flex-1 min-h-0` container so the flex layout propagates correctly through the component tree
 
-## Visual Result
-- Assistant messages: full-width left-aligned plain text with markdown rendering, no background
-- User messages: right-aligned text, slightly muted color, no bubble
-- More horizontal space for content
-- Clean whitespace between messages (existing `mb-4` spacing)
+Both changes are single-line CSS class tweaks. No logic changes needed.
+
