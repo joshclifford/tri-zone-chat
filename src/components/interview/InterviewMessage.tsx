@@ -27,9 +27,9 @@ export function InterviewMessage({ role, content, index }: InterviewMessageProps
         {isUser ? (
           content
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown>{content}</ReactMarkdown>
-          </div>
+          <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
+            {content}
+          </ReactMarkdown>
         )}
       </div>
     </motion.div>
