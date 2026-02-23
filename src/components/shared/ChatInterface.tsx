@@ -239,7 +239,9 @@ Rules:
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages: currentMessages.map((m) => ({ role: m.role, content: m.content })),
+            messages: currentMessages
+              .filter((m) => m.content && m.content.trim() !== "")
+              .map((m) => ({ role: m.role, content: m.content })),
             systemPrompt: buildSystemPrompt(),
           }),
         }
