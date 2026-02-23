@@ -210,7 +210,7 @@ export function InterviewChat() {
   return (
     <div className="flex flex-col h-full">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="mx-auto max-w-[700px]">
+        <div className="mx-auto max-w-3xl">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-lg font-semibold text-foreground mb-1">Let's build your Customer Engine OS foundation</h1>
@@ -245,7 +245,7 @@ export function InterviewChat() {
       {/* Input bar — only show for text turns */}
       {showInput && (
         <div className="border-t border-border bg-card/80 backdrop-blur-sm">
-          <div className="mx-auto max-w-[700px] px-4 py-3">
+          <div className="mx-auto max-w-3xl px-4 py-3">
             <div className="flex items-end gap-2 rounded-xl border border-border bg-background px-4 py-3 focus-within:border-primary/40 transition-colors">
               <textarea
                 ref={inputRef}

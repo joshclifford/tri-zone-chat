@@ -15,23 +15,15 @@ export function InterviewMessage({ role, content, index }: InterviewMessageProps
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: 0.05 }}
-      className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}
+      className={`mb-5 ${isUser ? "text-right" : "text-left"}`}
     >
-      <div
-        className={`max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed ${
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-foreground"
-        }`}
-      >
-        {isUser ? (
-          content
-        ) : (
-          <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-            {content}
-          </ReactMarkdown>
-        )}
-      </div>
+      {isUser ? (
+        <span className="text-base leading-relaxed text-muted-foreground">{content}</span>
+      ) : (
+        <ReactMarkdown className="prose prose-base dark:prose-invert max-w-none">
+          {content}
+        </ReactMarkdown>
+      )}
     </motion.div>
   );
 }
