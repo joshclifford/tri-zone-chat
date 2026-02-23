@@ -50,9 +50,8 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
   const streamResponse = useCallback(async (currentMessages: Message[]) => {
     setIsStreaming(true);
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/chat`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
