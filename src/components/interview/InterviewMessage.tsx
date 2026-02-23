@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 
 interface InterviewMessageProps {
   role: "user" | "assistant";
@@ -23,7 +24,13 @@ export function InterviewMessage({ role, content, index }: InterviewMessageProps
             : "bg-muted text-foreground"
         }`}
       >
-        {content}
+        {isUser ? (
+          content
+        ) : (
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
+        )}
       </div>
     </motion.div>
   );
