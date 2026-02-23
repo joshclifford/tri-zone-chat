@@ -29,6 +29,50 @@ export interface ChatMessage {
   };
 }
 
+interface RoadmapData {
+  programName: string;
+  description: string;
+  phases: Array<{
+    label: string;
+    name: string;
+    steps: Array<{ name: string; description: string }>;
+  }>;
+}
+
+const DEFAULT_ROADMAP: RoadmapData = {
+  programName: "The Conversion Catalyst",
+  description: "A 90-day system that helps B2B consultants attract premium clients, craft irresistible offers, and build predictable revenue.",
+  phases: [
+    {
+      label: "Phase 1",
+      name: "Foundation",
+      steps: [
+        { name: "Million Dollar Message", description: "Clarify who you help and why you're the obvious choice." },
+        { name: "Offer Architecture", description: "Design a premium offer that delivers transformation." },
+        { name: "Pricing & Packaging", description: "Position pricing to attract committed buyers." },
+      ],
+    },
+    {
+      label: "Phase 2",
+      name: "Content Engine",
+      steps: [
+        { name: "Lead Magnet", description: "Create a free resource that pre-qualifies ideal clients." },
+        { name: "Workshop Funnel", description: "Build a live workshop that converts to buyers." },
+        { name: "Nurture Sequence", description: "Automate follow-up that builds trust and drives action." },
+      ],
+    },
+    {
+      label: "Phase 3",
+      name: "Traffic & Scale",
+      steps: [
+        { name: "Organic Strategy", description: "Turn social content into a client acquisition system." },
+        { name: "Paid Amplification", description: "Layer paid ads on proven organic content." },
+        { name: "Referral Engine", description: "Systematize referrals from every happy client." },
+      ],
+    },
+  ],
+};
+
 interface ChatInterfaceProps {
   systemPrompt: string;
   skillId: string;
@@ -41,8 +85,73 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [convId, setConvId] = useState<string | null>(existingConvId ?? null);
+  const [roadmap, setRoadmap] = useState<RoadmapData>(DEFAULT_ROADMAP);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasFiredGreeting = useRef(false);
+  const { openRightPanel, updateRightPanelContent, rightPanelOpen, rightPanelContent } = useLayout();
+
+  // Helper to build roadmap artifact content object
+  const buildRoadmapContent = useCallback((rm: RoadmapData) => ({
+    programName: rm.programName,
+    description: rm.description,
+    phases: rm.phases,
+  }), []);
+
+  // Update the right panel if it's showing the roadmap
+  const syncRightPanel = useCallback((rm: RoadmapData) => {
+    if (rightPanelOpen && rightPanelContent?.type === "roadmap") {
+      updateRightPanelContent({
+        title: "Program Roadmap",
+        type: "roadmap",
+        artifactData: {
+          preview: "Your 3-phase transformation roadmap.",
+          content: buildRoadmapContent(rm),
+          assetType: "roadmap",
+        },
+      });
+    }
+  }, [rightPanelOpen, rightPanelContent, updateRightPanelContent, buildRoadmapContent]);
+
+  // Update roadmap artifact message in the chat
+  const updateRoadmapInMessages = useCallback((rm: RoadmapData) => {
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.type === "artifact" && m.metadata?.artifact?.assetType === "roadmap") {
+          return {
+            ...m,
+            metadata: {
+              ...m.metadata,
+              artifact: {
+                ...m.metadata!.artifact!,
+                content: buildRoadmapContent(rm),
+              },
+            },
+          };
+        }
+        return m;
+      })
+    );
+  }, [buildRoadmapContent]);
+
+  // Parse roadmap update markers from content
+  const extractRoadmapUpdates = useCallback((content: string): { cleanContent: string; updatedRoadmap: RoadmapData | null } => {
+    const regex = /\[ROADMAP_UPDATE:(\{[\s\S]*?\})\]/g;
+    let updatedRoadmap: RoadmapData | null = null;
+    const cleanContent = content.replace(regex, (_, json) => {
+      try {
+        const parsed = JSON.parse(json);
+        // Merge partial updates into current roadmap
+        updatedRoadmap = { ...roadmap };
+        if (parsed.programName) updatedRoadmap.programName = parsed.programName;
+        if (parsed.description) updatedRoadmap.description = parsed.description;
+        if (parsed.phases) updatedRoadmap.phases = parsed.phases;
+      } catch (e) {
+        console.error("Failed to parse roadmap update:", e);
+      }
+      return "";
+    }).trim();
+    return { cleanContent, updatedRoadmap };
+  }, [roadmap]);
 
   // Auto-save conversation after each assistant response
   const saveConversation = useCallback(async (msgs: ChatMessage[]) => {
@@ -99,6 +208,27 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
     return parts;
   }, []);
 
+  // Build the augmented system prompt with roadmap context
+  const buildSystemPrompt = useCallback(() => {
+    const roadmapContext = `
+
+CURRENT ROADMAP STATE (this is the user's current program roadmap — you can update it):
+${JSON.stringify(roadmap, null, 2)}
+
+ROADMAP UPDATE INSTRUCTIONS:
+When the user asks to change the roadmap (rename phases, rename steps, change descriptions, add/remove steps, rename the program, etc.), output a [ROADMAP_UPDATE:{...}] marker with the FULL updated roadmap JSON. The format must be:
+[ROADMAP_UPDATE:{"programName":"...","description":"...","phases":[{"label":"Phase 1","name":"...","steps":[{"name":"...","description":"..."},...]},{"label":"Phase 2","name":"...","steps":[...]},{"label":"Phase 3","name":"...","steps":[...]}]}]
+
+Rules:
+- Keep step descriptions SHORT — max 12 words each
+- Keep all phases with the same number of steps (3 each) unless the user asks otherwise
+- Always output the COMPLETE roadmap in the update, not just changed parts
+- Include the marker inline in your response, then continue talking normally
+- Only output ROADMAP_UPDATE when the user actually wants to change the roadmap content
+`;
+    return systemPrompt + roadmapContext;
+  }, [systemPrompt, roadmap]);
+
   // Stream a response from the AI
   const streamResponse = useCallback(async (currentMessages: ChatMessage[]) => {
     setIsStreaming(true);
@@ -110,7 +240,7 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: currentMessages.map((m) => ({ role: m.role, content: m.content })),
-            systemPrompt,
+            systemPrompt: buildSystemPrompt(),
           }),
         }
       );
@@ -140,9 +270,11 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) {
               assistantContent += delta;
+              // Show content without roadmap markers during streaming
+              const displayContent = assistantContent.replace(/\[ROADMAP_UPDATE:[\s\S]*?\]/g, "").trim();
               setMessages((prev) => {
                 const copy = [...prev];
-                copy[copy.length - 1] = { role: "assistant", content: assistantContent };
+                copy[copy.length - 1] = { role: "assistant", content: displayContent };
                 return copy;
               });
             }
@@ -152,14 +284,30 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
         }
       }
 
-      // After streaming, parse for artifacts and replace the last message
+      // After streaming complete, extract roadmap updates
       if (assistantContent) {
-        const parsed = parseArtifacts(assistantContent);
-        if (parsed.length > 1 || parsed[0]?.type === "artifact") {
-          setMessages((prev) => [...prev.slice(0, -1), ...parsed]);
+        const { cleanContent, updatedRoadmap } = extractRoadmapUpdates(assistantContent);
+
+        if (updatedRoadmap) {
+          setRoadmap(updatedRoadmap);
+          updateRoadmapInMessages(updatedRoadmap);
+          syncRightPanel(updatedRoadmap);
         }
 
-        // DEMO: inject a mock artifact card after the first AI response
+        // Parse for other artifacts
+        const parsed = parseArtifacts(cleanContent);
+        if (parsed.length > 1 || parsed[0]?.type === "artifact") {
+          setMessages((prev) => [...prev.slice(0, -1), ...parsed]);
+        } else {
+          // Update the last message with clean content
+          setMessages((prev) => {
+            const copy = [...prev];
+            copy[copy.length - 1] = { role: "assistant", content: cleanContent };
+            return copy;
+          });
+        }
+
+        // DEMO: inject mock artifact cards after the first AI response
         setMessages((prev) => {
           const hasArtifact = prev.some((m) => m.type === "artifact");
           if (!hasArtifact && prev.filter((m) => m.role === "assistant").length === 1) {
@@ -175,45 +323,13 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
                     title: "Program Roadmap",
                     preview: "Your 3-phase transformation roadmap with 9 steps.",
                     assetType: "roadmap",
-                    content: {
-                      programName: "The Conversion Catalyst",
-                      description: "A 90-day system that helps B2B consultants attract premium clients, craft irresistible offers, and build predictable revenue — without cold outreach or paid ads.",
-                      phases: [
-                        {
-                          label: "Phase 1",
-                          name: "Foundation",
-                          steps: [
-                            { name: "Million Dollar Message", description: "Clarify exactly who you help, the problem you solve, and why you're the obvious choice." },
-                            { name: "Offer Architecture", description: "Design a premium offer stack that delivers transformation, not just information." },
-                            { name: "Pricing & Packaging", description: "Position your pricing to attract committed buyers and repel tire-kickers." },
-                          ],
-                        },
-                        {
-                          label: "Phase 2",
-                          name: "Content Engine",
-                          steps: [
-                            { name: "Lead Magnet", description: "Create an irresistible free resource that pre-qualifies your ideal clients." },
-                            { name: "Workshop Funnel", description: "Build a live workshop that converts attendees into high-ticket buyers." },
-                            { name: "Nurture Sequence", description: "Automate follow-up emails that build trust and drive applications." },
-                          ],
-                        },
-                        {
-                          label: "Phase 3",
-                          name: "Traffic & Scale",
-                          steps: [
-                            { name: "Organic Strategy", description: "Turn social content into a client acquisition machine with a daily posting system." },
-                            { name: "Paid Amplification", description: "Layer paid ads on top of proven organic content for predictable lead flow." },
-                            { name: "Referral Engine", description: "Systematize referrals so every happy client brings you two more." },
-                          ],
-                        },
-                      ],
-                    },
+                    content: buildRoadmapContent(roadmap),
                   },
                 },
               },
               {
                 role: "assistant" as const,
-                content: "Here's your program roadmap — click it to see the full 3-phase visual. I've also drafted some cold emails below.",
+                content: "Here's your program roadmap — click it to see the full 3-phase visual. You can ask me to change any phase names, step names, or descriptions and I'll update it live.",
                 type: "text" as const,
               },
               {
@@ -254,7 +370,7 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
           return prev;
         });
 
-        const toSave = [...currentMessages, { role: "assistant" as const, content: assistantContent }];
+        const toSave = [...currentMessages, { role: "assistant" as const, content: cleanContent }];
         await saveConversation(toSave);
       }
     } catch (err) {
@@ -266,7 +382,7 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
     } finally {
       setIsStreaming(false);
     }
-  }, [systemPrompt, saveConversation, parseArtifacts]);
+  }, [buildSystemPrompt, saveConversation, parseArtifacts, extractRoadmapUpdates, updateRoadmapInMessages, syncRightPanel, buildRoadmapContent, roadmap]);
 
   // Fire initial greeting on mount
   useEffect(() => {

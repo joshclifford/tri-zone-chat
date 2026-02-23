@@ -19,6 +19,7 @@ interface LayoutState {
   toggleLeftDrawer: () => void;
   toggleRightPanel: () => void;
   openRightPanel: (content: RightPanelContent) => void;
+  updateRightPanelContent: (content: RightPanelContent) => void;
   closeRightPanel: () => void;
   closeAll: () => void;
 }
@@ -35,6 +36,9 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
   const openRightPanel = useCallback((content: RightPanelContent) => {
     setRightPanelContent(content);
     setRightPanelOpen(true);
+  }, []);
+  const updateRightPanelContent = useCallback((content: RightPanelContent) => {
+    setRightPanelContent(content);
   }, []);
   const closeRightPanel = useCallback(() => {
     setRightPanelOpen(false);
@@ -60,7 +64,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
 
   return (
     <LayoutContext.Provider
-      value={{ leftDrawerOpen, rightPanelOpen, rightPanelContent, toggleLeftDrawer, toggleRightPanel, openRightPanel, closeRightPanel, closeAll }}
+      value={{ leftDrawerOpen, rightPanelOpen, rightPanelContent, toggleLeftDrawer, toggleRightPanel, openRightPanel, updateRightPanelContent, closeRightPanel, closeAll }}
     >
       {children}
     </LayoutContext.Provider>
