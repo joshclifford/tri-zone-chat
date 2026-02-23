@@ -46,7 +46,7 @@ export default function SkillChat() {
             <p className="text-muted-foreground text-sm">Loading skill...</p>
           </div>
         ) : skill ? (
-          <ChatInterface systemPrompt={skill.system_prompt} />
+          <ChatInterface systemPrompt={skill.system_prompt} skillId={skill.id} />
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-muted-foreground text-sm">Skill not found.</p>

@@ -3,6 +3,7 @@ import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InterviewMessage } from "@/components/interview/InterviewMessage";
 import { TypingIndicator } from "@/components/interview/TypingIndicator";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -11,37 +12,43 @@ interface Message {
 
 interface ChatInterfaceProps {
   systemPrompt: string;
-  initialMessage?: string;
-  onComplete?: (messages: Message[]) => void;
+  skillId: string;
+  conversationId?: string;
+  initialMessages?: Message[];
 }
 
-export function ChatInterface({ systemPrompt, initialMessage }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+export function ChatInterface({ systemPrompt, skillId, conversationId: existingConvId, initialMessages }: ChatInterfaceProps) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [convId, setConvId] = useState<string | null>(existingConvId ?? null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const hasFiredGreeting = useRef(false);
 
-  useEffect(() => {
-    if (initialMessage && messages.length === 0) {
-      setMessages([{ role: "assistant", content: initialMessage }]);
+  // Auto-save conversation after each assistant response
+  const saveConversation = useCallback(async (msgs: Message[]) => {
+    try {
+      if (convId) {
+        await supabase
+          .from("conversations")
+          .update({ messages: msgs as any })
+          .eq("id", convId);
+      } else {
+        const { data, error } = await supabase
+          .from("conversations")
+          .insert({ skill_id: skillId, messages: msgs as any })
+          .select("id")
+          .single();
+        if (!error && data) setConvId(data.id);
+      }
+    } catch (e) {
+      console.error("Save conversation error:", e);
     }
-  }, [initialMessage]);
+  }, [convId, skillId]);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isStreaming]);
-
-  const sendMessage = useCallback(async () => {
-    const trimmed = input.trim();
-    if (!trimmed || isStreaming) return;
-
-    const userMsg: Message = { role: "user", content: trimmed };
-    const updated = [...messages, userMsg];
-    setMessages(updated);
-    setInput("");
+  // Stream a response from the AI
+  const streamResponse = useCallback(async (currentMessages: Message[]) => {
     setIsStreaming(true);
-
     try {
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
@@ -50,7 +57,7 @@ export function ChatInterface({ systemPrompt, initialMessage }: ChatInterfacePro
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages: updated.map((m) => ({ role: m.role, content: m.content })),
+            messages: currentMessages.map((m) => ({ role: m.role, content: m.content })),
             systemPrompt,
           }),
         }
@@ -61,8 +68,12 @@ export function ChatInterface({ systemPrompt, initialMessage }: ChatInterfacePro
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
+      let finalMessages: Message[] = [];
 
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      setMessages((prev) => {
+        const next = [...prev, { role: "assistant" as const, content: "" }];
+        return next;
+      });
 
       while (true) {
         const { done, value } = await reader.read();
@@ -84,6 +95,7 @@ export function ChatInterface({ systemPrompt, initialMessage }: ChatInterfacePro
               setMessages((prev) => {
                 const copy = [...prev];
                 copy[copy.length - 1] = { role: "assistant", content: assistantContent };
+                finalMessages = copy;
                 return copy;
               });
             }
@@ -92,19 +104,46 @@ export function ChatInterface({ systemPrompt, initialMessage }: ChatInterfacePro
           }
         }
       }
+
+      // Auto-save after streaming completes
+      if (assistantContent) {
+        const toSave = [...currentMessages, { role: "assistant" as const, content: assistantContent }];
+        await saveConversation(toSave);
+      }
     } catch (err) {
       console.error("Chat error:", err);
       setMessages((prev) => [
         ...prev,
-        ...(prev[prev.length - 1]?.role === "assistant" && prev[prev.length - 1]?.content === ""
-          ? []
-          : []),
         { role: "assistant" as const, content: "Sorry, something went wrong. Please try again." },
       ]);
     } finally {
       setIsStreaming(false);
     }
-  }, [input, isStreaming, messages, systemPrompt]);
+  }, [systemPrompt, saveConversation]);
+
+  // Fire initial greeting on mount (sends empty history so AI opens the conversation)
+  useEffect(() => {
+    if (!hasFiredGreeting.current && messages.length === 0) {
+      hasFiredGreeting.current = true;
+      streamResponse([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, isStreaming]);
+
+  const sendMessage = useCallback(async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isStreaming) return;
+
+    const userMsg: Message = { role: "user", content: trimmed };
+    const updated = [...messages, userMsg];
+    setMessages(updated);
+    setInput("");
+
+    await streamResponse(updated);
+  }, [input, isStreaming, messages, streamResponse]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -127,7 +166,6 @@ export function ChatInterface({ systemPrompt, initialMessage }: ChatInterfacePro
       <div className="border-t border-border bg-card/50 px-4 py-3">
         <div className="max-w-2xl mx-auto flex gap-2">
           <textarea
-            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
