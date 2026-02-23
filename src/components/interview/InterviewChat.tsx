@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { InterviewMessage } from "./InterviewMessage";
-import { OptionChips } from "./OptionChips";
 import { FoundationSummary } from "./FoundationSummary";
 import { TypingIndicator } from "./TypingIndicator";
+import { InlineOptionChips } from "@/components/chat/InlineOptionChips";
+import { StepDivider } from "@/components/chat/StepDivider";
 import { useAppState, VoiceProfile, Positioning } from "@/hooks/use-app-state";
 import { Send } from "lucide-react";
 
@@ -217,14 +218,31 @@ export function InterviewChat() {
             <p className="text-sm text-muted-foreground">A quick 5-question interview to capture your brand voice & positioning.</p>
           </div>
 
-          {messages.map((msg, i) => (
-            <InterviewMessage key={msg.id} role={msg.role} content={msg.content} index={i} />
-          ))}
+          {messages.map((msg, i) => {
+            // Show step divider before each AI message at key turns
+            const showDivider = msg.role === "assistant" && i > 0;
+            const turnIndex = messages.filter((m, j) => j <= i && m.role === "assistant").length;
+            return (
+              <div key={msg.id}>
+                {showDivider && turnIndex > 1 && (
+                  <StepDivider current={turnIndex} total={TURNS.length} />
+                )}
+                <InterviewMessage role={msg.role} content={msg.content} index={i} />
+              </div>
+            );
+          })}
 
-          {isTyping && <TypingIndicator />}
+          {isTyping && <TypingIndicator statusText={
+            currentTurn === 0 ? undefined :
+            currentTurn === 1 ? "Analyzing your business…" :
+            currentTurn === 2 ? "Finding your hook angle…" :
+            currentTurn === 3 ? "Refining your voice…" :
+            currentTurn === 4 ? "Mapping your audience…" :
+            "Building your foundation…"
+          } />}
 
           {showChips && (
-            <OptionChips
+            <InlineOptionChips
               options={chipOptions}
               onSelect={handleChipSelect}
               allowCustom={currentTurnData?.allowCustom}

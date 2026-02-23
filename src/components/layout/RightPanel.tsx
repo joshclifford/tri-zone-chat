@@ -14,6 +14,90 @@ export function RightPanel() {
   const latestAsset = allAssets[allAssets.length - 1];
 
   const renderContent = () => {
+    // If opened via artifact card, render artifact data
+    const artifactData = rightPanelContent?.artifactData;
+    if (artifactData) {
+      const content = artifactData.content;
+
+      if (artifactData.assetType === "lead-magnet") {
+        const sections = (content.sections as Array<{ heading: string; body: string }>) || [];
+        return (
+          <div>
+            <h2 className="text-lg font-semibold text-foreground mb-1">{content.title as string}</h2>
+            <p className="text-xs text-muted-foreground mb-6">Format: {content.format as string}</p>
+            {sections.map((s, i) => (
+              <div key={i} className="mb-5">
+                <h3 className="text-sm font-semibold text-foreground mb-1">{s.heading}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      if (artifactData.assetType === "landing-page") {
+        const bullets = (content.bullets as string[]) || [];
+        return (
+          <div>
+            <div className="rounded-lg border border-border bg-muted/30 p-6 mb-6 text-center">
+              <h2 className="text-xl font-bold text-foreground mb-2">{content.headline as string}</h2>
+              <p className="text-sm text-muted-foreground mb-4">{content.subhead as string}</p>
+              <ul className="text-left space-y-2 mb-4 max-w-sm mx-auto">
+                {bullets.map((b, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                    <span className="text-primary mt-0.5">✓</span>
+                    {b}
+                  </li>
+                ))}
+              </ul>
+              <button className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium">
+                {content.cta as string}
+              </button>
+              <p className="text-xs text-muted-foreground mt-3">{content.socialProof as string}</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (artifactData.assetType === "email-sequence") {
+        const emails = (content.emails as Array<{ subject: string; preview: string }>) || [];
+        return (
+          <div>
+            <h2 className="text-base font-semibold text-foreground mb-4">
+              Email Sequence ({emails.length} emails)
+            </h2>
+            <div className="space-y-3">
+              {emails.map((email, i) => (
+                <div key={i} className="rounded-lg border border-border p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-medium text-muted-foreground">Email {i + 1}</span>
+                  </div>
+                  <h4 className="text-sm font-medium text-foreground mb-1">{email.subject}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{email.preview}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      // Generic artifact: render content as formatted text
+      return (
+        <div className="prose prose-sm dark:prose-invert max-w-none">
+          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            {artifactData.preview}
+          </p>
+          {Object.entries(content).map(([key, val]) => (
+            <div key={key} className="mb-4">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">{key}</h4>
+              <p className="text-sm text-foreground">{typeof val === "string" ? val : JSON.stringify(val, null, 2)}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Fallback: existing asset-based rendering
     if (!latestAsset) {
       return (
         <div className="text-sm text-muted-foreground text-center py-12">
@@ -22,14 +106,14 @@ export function RightPanel() {
       );
     }
 
-    const content = latestAsset.content as Record<string, unknown>;
+    const assetContent = latestAsset.content as Record<string, unknown>;
 
     if (latestAsset.assetType === "lead-magnet") {
-      const sections = (content.sections as Array<{ heading: string; body: string }>) || [];
+      const sections = (assetContent.sections as Array<{ heading: string; body: string }>) || [];
       return (
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-1">{content.title as string}</h2>
-          <p className="text-xs text-muted-foreground mb-6">Format: {content.format as string}</p>
+          <h2 className="text-lg font-semibold text-foreground mb-1">{assetContent.title as string}</h2>
+          <p className="text-xs text-muted-foreground mb-6">Format: {assetContent.format as string}</p>
           {sections.map((s, i) => (
             <div key={i} className="mb-5">
               <h3 className="text-sm font-semibold text-foreground mb-1">{s.heading}</h3>
@@ -41,12 +125,12 @@ export function RightPanel() {
     }
 
     if (latestAsset.assetType === "landing-page") {
-      const bullets = (content.bullets as string[]) || [];
+      const bullets = (assetContent.bullets as string[]) || [];
       return (
         <div>
           <div className="rounded-lg border border-border bg-muted/30 p-6 mb-6 text-center">
-            <h2 className="text-xl font-bold text-foreground mb-2">{content.headline as string}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{content.subhead as string}</p>
+            <h2 className="text-xl font-bold text-foreground mb-2">{assetContent.headline as string}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{assetContent.subhead as string}</p>
             <ul className="text-left space-y-2 mb-4 max-w-sm mx-auto">
               {bullets.map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
@@ -56,16 +140,16 @@ export function RightPanel() {
               ))}
             </ul>
             <button className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium">
-              {content.cta as string}
+              {assetContent.cta as string}
             </button>
-            <p className="text-xs text-muted-foreground mt-3">{content.socialProof as string}</p>
+            <p className="text-xs text-muted-foreground mt-3">{assetContent.socialProof as string}</p>
           </div>
         </div>
       );
     }
 
     if (latestAsset.assetType === "email-sequence") {
-      const emails = (content.emails as Array<{ subject: string; preview: string }>) || [];
+      const emails = (assetContent.emails as Array<{ subject: string; preview: string }>) || [];
       return (
         <div>
           <h2 className="text-base font-semibold text-foreground mb-4">
