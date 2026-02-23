@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import { LayoutProvider, useLayout } from "@/hooks/use-layout";
+import { AppStateProvider } from "@/hooks/use-app-state";
 import { LeftDrawer } from "./LeftDrawer";
 import { RightPanel } from "./RightPanel";
-import { CenterStream } from "./CenterStream";
 import { Menu } from "lucide-react";
 
 function LayoutInner({ children }: { children: ReactNode }) {
@@ -23,7 +23,9 @@ function LayoutInner({ children }: { children: ReactNode }) {
           <span className="ml-3 text-sm font-semibold text-foreground tracking-tight">Growth OS</span>
         </header>
         <div className="flex flex-1 min-h-0">
-          <CenterStream>{children}</CenterStream>
+          <div className="flex-1 flex flex-col min-w-0 h-full">
+            {children}
+          </div>
           <RightPanel />
         </div>
       </div>
@@ -33,8 +35,10 @@ function LayoutInner({ children }: { children: ReactNode }) {
 
 export function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <LayoutProvider>
-      <LayoutInner>{children}</LayoutInner>
-    </LayoutProvider>
+    <AppStateProvider>
+      <LayoutProvider>
+        <LayoutInner>{children}</LayoutInner>
+      </LayoutProvider>
+    </AppStateProvider>
   );
 }

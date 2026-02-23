@@ -1,15 +1,96 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useLayout } from "@/hooks/use-layout";
+import { useAppState } from "@/hooks/use-app-state";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { X, Maximize2 } from "lucide-react";
 
 export function RightPanel() {
   const { rightPanelOpen, rightPanelContent, closeRightPanel } = useLayout();
+  const { activeCampaign, campaigns } = useAppState();
   const isMobile = useIsMobile();
+
+  // Find latest asset to display
+  const allAssets = activeCampaign?.assets || campaigns.flatMap((c) => c.assets);
+  const latestAsset = allAssets[allAssets.length - 1];
+
+  const renderContent = () => {
+    if (!latestAsset) {
+      return (
+        <div className="text-sm text-muted-foreground text-center py-12">
+          Artifact workbench — content will appear here
+        </div>
+      );
+    }
+
+    const content = latestAsset.content as Record<string, unknown>;
+
+    if (latestAsset.assetType === "lead-magnet") {
+      const sections = (content.sections as Array<{ heading: string; body: string }>) || [];
+      return (
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-1">{content.title as string}</h2>
+          <p className="text-xs text-muted-foreground mb-6">Format: {content.format as string}</p>
+          {sections.map((s, i) => (
+            <div key={i} className="mb-5">
+              <h3 className="text-sm font-semibold text-foreground mb-1">{s.heading}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (latestAsset.assetType === "landing-page") {
+      const bullets = (content.bullets as string[]) || [];
+      return (
+        <div>
+          <div className="rounded-lg border border-border bg-muted/30 p-6 mb-6 text-center">
+            <h2 className="text-xl font-bold text-foreground mb-2">{content.headline as string}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{content.subhead as string}</p>
+            <ul className="text-left space-y-2 mb-4 max-w-sm mx-auto">
+              {bullets.map((b, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                  <span className="text-primary mt-0.5">✓</span>
+                  {b}
+                </li>
+              ))}
+            </ul>
+            <button className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium">
+              {content.cta as string}
+            </button>
+            <p className="text-xs text-muted-foreground mt-3">{content.socialProof as string}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (latestAsset.assetType === "email-sequence") {
+      const emails = (content.emails as Array<{ subject: string; preview: string }>) || [];
+      return (
+        <div>
+          <h2 className="text-base font-semibold text-foreground mb-4">
+            Email Sequence ({emails.length} emails)
+          </h2>
+          <div className="space-y-3">
+            {emails.map((email, i) => (
+              <div key={i} className="rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-medium text-muted-foreground">Email {i + 1}</span>
+                </div>
+                <h4 className="text-sm font-medium text-foreground mb-1">{email.subject}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{email.preview}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <>
-      {/* Scrim for mobile */}
       <AnimatePresence>
         {rightPanelOpen && isMobile && (
           <motion.div
@@ -33,7 +114,6 @@ export function RightPanel() {
             className={`${isMobile ? "fixed right-0 top-0 h-full z-50 w-[85%]" : "relative w-[45%]"} border-l border-border bg-card flex flex-col shrink-0`}
             style={{ boxShadow: "var(--shadow-panel)" }}
           >
-            {/* Floating header */}
             <div className="flex items-center justify-between px-4 h-12 border-b border-border">
               <span className="text-sm font-medium text-foreground truncate">
                 {rightPanelContent?.title || "Artifact"}
@@ -51,11 +131,8 @@ export function RightPanel() {
               </div>
             </div>
 
-            {/* Content area */}
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="text-sm text-muted-foreground text-center py-12">
-                Artifact workbench — content will appear here
-              </div>
+              {renderContent()}
             </div>
           </motion.aside>
         )}
