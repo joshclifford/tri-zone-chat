@@ -32,7 +32,13 @@ export interface Campaign {
   context: Record<string, unknown>;
 }
 
-type Phase = "interview" | "grid" | "funnel";
+type Phase = "interview" | "grid" | "mode-select" | "funnel";
+type WorkflowMode = "collaborate" | "get-it-done" | null;
+
+interface PendingWorkflow {
+  type: string;
+  steps: number;
+}
 
 interface AppState {
   phase: Phase;
@@ -41,9 +47,12 @@ interface AppState {
   positioning: Positioning | null;
   activeCampaign: Campaign | null;
   campaigns: Campaign[];
+  workflowMode: WorkflowMode;
+  pendingWorkflow: PendingWorkflow | null;
   lockFoundation: (voice: VoiceProfile, pos: Positioning) => void;
   resetFoundation: () => void;
   startFunnel: (workflowType: string, totalSteps: number) => void;
+  selectMode: (mode: "collaborate" | "get-it-done") => void;
   advanceStep: () => void;
   addAsset: (asset: Asset) => void;
   completeFunnel: () => void;
@@ -84,6 +93,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [positioning, setPositioning] = useState<Positioning | null>(saved?.positioning ?? null);
   const [campaigns, setCampaigns] = useState<Campaign[]>(saved?.campaigns ?? []);
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
+  const [workflowMode, setWorkflowMode] = useState<WorkflowMode>(null);
+  const [pendingWorkflow, setPendingWorkflow] = useState<PendingWorkflow | null>(null);
   const [phase, setPhase] = useState<Phase>(saved?.foundationLocked ? "grid" : "interview");
 
   useEffect(() => {
@@ -101,24 +112,35 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setFoundationLocked(false);
     setVoiceProfile(null);
     setPositioning(null);
+    setWorkflowMode(null);
+    setPendingWorkflow(null);
     setPhase("interview");
     setCampaigns([]);
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   const startFunnel = useCallback((workflowType: string, totalSteps: number) => {
-    const campaign: Campaign = {
-      id: crypto.randomUUID(),
-      workflowType,
-      currentStep: 1,
-      totalSteps,
-      status: "active",
-      assets: [],
-      context: {},
-    };
-    setActiveCampaign(campaign);
-    setPhase("funnel");
+    setPendingWorkflow({ type: workflowType, steps: totalSteps });
+    setPhase("mode-select");
   }, []);
+
+  const selectMode = useCallback((mode: "collaborate" | "get-it-done") => {
+    setWorkflowMode(mode);
+    if (pendingWorkflow) {
+      const campaign: Campaign = {
+        id: crypto.randomUUID(),
+        workflowType: pendingWorkflow.type,
+        currentStep: 1,
+        totalSteps: pendingWorkflow.steps,
+        status: "active",
+        assets: [],
+        context: {},
+      };
+      setActiveCampaign(campaign);
+      setPendingWorkflow(null);
+    }
+    setPhase("funnel");
+  }, [pendingWorkflow]);
 
   const advanceStep = useCallback(() => {
     setActiveCampaign((c) => c ? { ...c, currentStep: c.currentStep + 1 } : c);
@@ -140,6 +162,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const returnToGrid = useCallback(() => {
     setActiveCampaign(null);
+    setWorkflowMode(null);
+    setPendingWorkflow(null);
     setPhase("grid");
   }, []);
 
@@ -147,7 +171,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     <AppStateContext.Provider
       value={{
         phase, foundationLocked, voiceProfile, positioning, activeCampaign, campaigns,
-        lockFoundation, resetFoundation, startFunnel, advanceStep, addAsset, completeFunnel, returnToGrid,
+        workflowMode, pendingWorkflow,
+        lockFoundation, resetFoundation, startFunnel, selectMode, advanceStep, addAsset, completeFunnel, returnToGrid,
       }}
     >
       {children}

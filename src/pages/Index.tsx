@@ -1,6 +1,7 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { InterviewChat } from "@/components/interview/InterviewChat";
 import { DiscoveryGrid } from "@/components/discovery/DiscoveryGrid";
+import { ModeSelector } from "@/components/funnel/ModeSelector";
 import { FunnelChat } from "@/components/funnel/FunnelChat";
 import { useAppState } from "@/hooks/use-app-state";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,6 +40,19 @@ function IndexContent() {
               }
             }}
           />
+        </motion.div>
+      )}
+
+      {phase === "mode-select" && (
+        <motion.div
+          key="mode-select"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="h-full"
+        >
+          <ModeSelector />
         </motion.div>
       )}
 
