@@ -1,24 +1,43 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { InterviewMessage } from "@/components/interview/InterviewMessage";
 import { TypingIndicator } from "@/components/interview/TypingIndicator";
+import { InlineOptionChips } from "@/components/chat/InlineOptionChips";
+import { ThinkingState } from "@/components/chat/ThinkingState";
+import { ArtifactCard } from "@/components/chat/ArtifactCard";
+import { StepDivider } from "@/components/chat/StepDivider";
+import { useLayout } from "@/hooks/use-layout";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Message {
+export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  type?: "text" | "options" | "artifact" | "thinking" | "divider";
+  metadata?: {
+    options?: string[];
+    allowCustom?: boolean;
+    artifact?: {
+      id: string;
+      title: string;
+      preview: string;
+      assetType: string;
+      content: Record<string, unknown>;
+    };
+    thinkingStatus?: string;
+    thinkingSteps?: Array<{ label: string; done: boolean }>;
+    stepInfo?: { current: number; total: number };
+  };
 }
 
 interface ChatInterfaceProps {
   systemPrompt: string;
   skillId: string;
   conversationId?: string;
-  initialMessages?: Message[];
+  initialMessages?: ChatMessage[];
 }
 
 export function ChatInterface({ systemPrompt, skillId, conversationId: existingConvId, initialMessages }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [convId, setConvId] = useState<string | null>(existingConvId ?? null);
@@ -26,7 +45,7 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
   const hasFiredGreeting = useRef(false);
 
   // Auto-save conversation after each assistant response
-  const saveConversation = useCallback(async (msgs: Message[]) => {
+  const saveConversation = useCallback(async (msgs: ChatMessage[]) => {
     try {
       if (convId) {
         await supabase
@@ -46,8 +65,42 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
     }
   }, [convId, skillId]);
 
+  // Parse artifact markers from assistant content
+  const parseArtifacts = useCallback((content: string): ChatMessage[] => {
+    const artifactRegex = /\[ARTIFACT:(\{.*?\})\]/gs;
+    const parts: ChatMessage[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = artifactRegex.exec(content)) !== null) {
+      const before = content.slice(lastIndex, match.index).trim();
+      if (before) {
+        parts.push({ role: "assistant", content: before, type: "text" });
+      }
+      try {
+        const artifactData = JSON.parse(match[1]);
+        parts.push({
+          role: "assistant",
+          content: "",
+          type: "artifact",
+          metadata: { artifact: artifactData },
+        });
+      } catch {
+        parts.push({ role: "assistant", content: match[0], type: "text" });
+      }
+      lastIndex = match.index + match[0].length;
+    }
+
+    const remaining = content.slice(lastIndex).trim();
+    if (remaining || parts.length === 0) {
+      parts.push({ role: "assistant", content: remaining || content, type: "text" });
+    }
+
+    return parts;
+  }, []);
+
   // Stream a response from the AI
-  const streamResponse = useCallback(async (currentMessages: Message[]) => {
+  const streamResponse = useCallback(async (currentMessages: ChatMessage[]) => {
     setIsStreaming(true);
     try {
       const res = await fetch(
@@ -67,12 +120,8 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
-      let finalMessages: Message[] = [];
 
-      setMessages((prev) => {
-        const next = [...prev, { role: "assistant" as const, content: "" }];
-        return next;
-      });
+      setMessages((prev) => [...prev, { role: "assistant" as const, content: "" }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -94,7 +143,6 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
               setMessages((prev) => {
                 const copy = [...prev];
                 copy[copy.length - 1] = { role: "assistant", content: assistantContent };
-                finalMessages = copy;
                 return copy;
               });
             }
@@ -104,8 +152,12 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
         }
       }
 
-      // Auto-save after streaming completes
+      // After streaming, parse for artifacts and replace the last message
       if (assistantContent) {
+        const parsed = parseArtifacts(assistantContent);
+        if (parsed.length > 1 || parsed[0]?.type === "artifact") {
+          setMessages((prev) => [...prev.slice(0, -1), ...parsed]);
+        }
         const toSave = [...currentMessages, { role: "assistant" as const, content: assistantContent }];
         await saveConversation(toSave);
       }
@@ -118,9 +170,9 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
     } finally {
       setIsStreaming(false);
     }
-  }, [systemPrompt, saveConversation]);
+  }, [systemPrompt, saveConversation, parseArtifacts]);
 
-  // Fire initial greeting on mount (sends empty history so AI opens the conversation)
+  // Fire initial greeting on mount
   useEffect(() => {
     if (!hasFiredGreeting.current && messages.length === 0) {
       hasFiredGreeting.current = true;
@@ -132,11 +184,11 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isStreaming]);
 
-  const sendMessage = useCallback(async () => {
-    const trimmed = input.trim();
+  const sendMessage = useCallback(async (text?: string) => {
+    const trimmed = (text ?? input).trim();
     if (!trimmed || isStreaming) return;
 
-    const userMsg: Message = { role: "user", content: trimmed };
+    const userMsg: ChatMessage = { role: "user", content: trimmed };
     const updated = [...messages, userMsg];
     setMessages(updated);
     setInput("");
@@ -151,13 +203,58 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
     }
   };
 
+  const handleChipSelect = (option: string) => {
+    sendMessage(option);
+  };
+
+  const renderMessage = (msg: ChatMessage, i: number) => {
+    const type = msg.type || "text";
+
+    switch (type) {
+      case "options":
+        return (
+          <div key={i}>
+            <InterviewMessage role={msg.role} content={msg.content} index={i} />
+            {msg.metadata?.options && (
+              <InlineOptionChips
+                options={msg.metadata.options}
+                onSelect={handleChipSelect}
+                allowCustom={msg.metadata.allowCustom}
+              />
+            )}
+          </div>
+        );
+
+      case "artifact":
+        return msg.metadata?.artifact ? (
+          <ArtifactCard key={i} artifact={msg.metadata.artifact} />
+        ) : null;
+
+      case "thinking":
+        return (
+          <ThinkingState
+            key={i}
+            statusText={msg.metadata?.thinkingStatus}
+            steps={msg.metadata?.thinkingSteps}
+          />
+        );
+
+      case "divider":
+        return msg.metadata?.stepInfo ? (
+          <StepDivider key={i} current={msg.metadata.stepInfo.current} total={msg.metadata.stepInfo.total} />
+        ) : null;
+
+      case "text":
+      default:
+        return <InterviewMessage key={i} role={msg.role} content={msg.content} index={i} />;
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-3xl mx-auto">
-          {messages.map((msg, i) => (
-            <InterviewMessage key={i} role={msg.role} content={msg.content} index={i} />
-          ))}
+          {messages.map((msg, i) => renderMessage(msg, i))}
           {isStreaming && messages[messages.length - 1]?.content === "" && <TypingIndicator />}
         </div>
       </div>
@@ -181,7 +278,7 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
             />
             <div className="flex items-center justify-end px-3 pb-2">
               <button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={isStreaming || !input.trim()}
                 className="p-1.5 rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground disabled:opacity-40 disabled:hover:bg-muted disabled:hover:text-muted-foreground transition-colors"
               >

@@ -1,14 +1,25 @@
 import { motion } from "framer-motion";
 import { Check, Circle } from "lucide-react";
 
-interface TypingIndicatorProps {
-  statusText?: string;
-  steps?: Array<{ label: string; done: boolean }>;
+interface ThinkingStep {
+  label: string;
+  done: boolean;
 }
 
-export function TypingIndicator({ statusText, steps }: TypingIndicatorProps) {
+interface ThinkingStateProps {
+  statusText?: string;
+  steps?: ThinkingStep[];
+}
+
+export function ThinkingState({ statusText, steps }: ThinkingStateProps) {
   return (
-    <div className="mb-5">
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="mb-5"
+    >
+      {/* Animated dots with status text */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
           {[0, 1, 2].map((i) => (
@@ -21,17 +32,31 @@ export function TypingIndicator({ statusText, steps }: TypingIndicatorProps) {
           ))}
         </div>
         {statusText && (
-          <span className="text-xs text-muted-foreground">{statusText}</span>
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-xs text-muted-foreground"
+          >
+            {statusText}
+          </motion.span>
         )}
       </div>
+
+      {/* Progress checklist */}
       {steps && steps.length > 0 && (
-        <div className="mt-2.5 ml-1 space-y-1.5">
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          transition={{ delay: 0.4, duration: 0.3 }}
+          className="mt-3 ml-1 space-y-1.5"
+        >
           {steps.map((step, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, x: -4 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.15 }}
+              transition={{ delay: 0.5 + i * 0.15 }}
               className="flex items-center gap-2"
             >
               {step.done ? (
@@ -44,8 +69,8 @@ export function TypingIndicator({ statusText, steps }: TypingIndicatorProps) {
               </span>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

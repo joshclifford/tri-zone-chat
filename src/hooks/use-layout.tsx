@@ -1,12 +1,24 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 
+interface ArtifactPanelData {
+  preview: string;
+  content: Record<string, unknown>;
+  assetType: string;
+}
+
+interface RightPanelContent {
+  title: string;
+  type: string;
+  artifactData?: ArtifactPanelData;
+}
+
 interface LayoutState {
   leftDrawerOpen: boolean;
   rightPanelOpen: boolean;
-  rightPanelContent: { title: string; type: string } | null;
+  rightPanelContent: RightPanelContent | null;
   toggleLeftDrawer: () => void;
   toggleRightPanel: () => void;
-  openRightPanel: (content: { title: string; type: string }) => void;
+  openRightPanel: (content: RightPanelContent) => void;
   closeRightPanel: () => void;
   closeAll: () => void;
 }
@@ -16,11 +28,11 @@ const LayoutContext = createContext<LayoutState | null>(null);
 export function LayoutProvider({ children }: { children: ReactNode }) {
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [rightPanelContent, setRightPanelContent] = useState<{ title: string; type: string } | null>(null);
+  const [rightPanelContent, setRightPanelContent] = useState<RightPanelContent | null>(null);
 
   const toggleLeftDrawer = useCallback(() => setLeftDrawerOpen((o) => !o), []);
   const toggleRightPanel = useCallback(() => setRightPanelOpen((o) => !o), []);
-  const openRightPanel = useCallback((content: { title: string; type: string }) => {
+  const openRightPanel = useCallback((content: RightPanelContent) => {
     setRightPanelContent(content);
     setRightPanelOpen(true);
   }, []);
