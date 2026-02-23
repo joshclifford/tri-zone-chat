@@ -47,7 +47,15 @@ export default function UserHome() {
   return (
     <AppLayout>
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="max-w-5xl mx-auto px-6 pt-24 sm:pt-32">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-4xl sm:text-5xl font-bold text-center text-foreground mb-12 sm:mb-16"
+          >
+            What Are We Building Today?
+          </motion.h1>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {ENGINES.map((engine, index) => (
               <motion.button
