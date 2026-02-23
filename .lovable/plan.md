@@ -1,33 +1,37 @@
 
-# Emoji Selector for Skill Creation
 
-## Current State
-The emoji field is a plain text `<Input>` where users must type/paste an emoji manually. This is unintuitive.
+# Fix Chat Message Rendering
+
+## Problem
+The AI's responses contain markdown formatting (`**bold**`, numbered lists, etc.) but the `InterviewMessage` component renders everything as plain text. This makes the opening message look like a wall of unformatted text with raw `**` markers everywhere.
 
 ## Solution
-Replace the text input with a clickable emoji button that opens a popover containing a grid of common emojis. Clicking an emoji selects it and closes the popover. The selected emoji displays on the button.
 
-No new dependencies needed -- we already have `Popover` and `PopoverContent` from Radix.
+Two changes:
 
-## Implementation
+### 1. Add markdown rendering to chat messages
 
-### Changes to `src/pages/Admin.tsx`
+Install `react-markdown` and update `InterviewMessage` to render assistant messages through it. User messages stay as plain text.
 
-1. Import `Popover`, `PopoverTrigger`, `PopoverContent` from `@/components/ui/popover`
-2. Replace the emoji `<Input>` with a `<Popover>` containing:
-   - **Trigger**: A button showing the currently selected emoji (large, centered)
-   - **Content**: A grid of ~40 commonly useful emojis (organized in rows), each clickable
-3. On emoji click: update `form.emoji` and close the popover
+**File: `src/components/interview/InterviewMessage.tsx`**
+- Import `ReactMarkdown` from `react-markdown`
+- Wrap assistant message content in `<ReactMarkdown>` with prose styling
+- User messages remain plain text
+- Add Tailwind prose classes (`prose prose-sm`) so headings, bold, lists, and paragraphs render properly
 
-### Emoji Set
-A curated set of ~40 emojis relevant to business/skill contexts:
-`🔧 🎯 💡 🚀 📝 💬 🎨 📊 🧠 💰 📣 🔍 ✍️ 📱 🎓 🤝 ⚡ 🏆 📈 🛠️ 💎 🔑 📋 🎤 💪 🌟 📢 🧩 🎁 ❤️ 🔔 📚 🤖 🎬 🌍 ✅ 🏷️ 💼 🗂️ 🧲`
+### 2. Use `VITE_SUPABASE_URL` instead of constructing the URL manually
 
-### UX Details
-- Button size: same 60px column width as current input
-- Popover grid: 8 columns of emojis, each ~36px tap target
-- Popover width: ~320px
-- Solid background on popover (not transparent)
-- High z-index (handled by Radix defaults)
+**File: `src/components/shared/ChatInterface.tsx`**
+- Replace the manually constructed `https://${projectId}.supabase.co/functions/v1/chat` with `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat` (best practice, already available in `.env`)
 
-No other files change.
+## Technical Details
+
+### `src/components/interview/InterviewMessage.tsx`
+- Add dependency: `react-markdown`
+- Conditionally render: if `role === "assistant"`, wrap content in `<ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">`, otherwise render as plain text
+- This ensures bold, lists, headings, and paragraphs display correctly
+
+### `src/components/shared/ChatInterface.tsx`
+- Line 53-54: Replace `const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID` and the constructed URL with `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`
+
+No changes to the edge function or system prompt -- the AI is behaving correctly, we just need to render its markdown output properly.
