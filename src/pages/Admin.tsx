@@ -8,8 +8,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+
+const EMOJI_OPTIONS = [
+  "🔧","🎯","💡","🚀","📝","💬","🎨","📊",
+  "🧠","💰","📣","🔍","✍️","📱","🎓","🤝",
+  "⚡","🏆","📈","🛠️","💎","🔑","📋","🎤",
+  "💪","🌟","📢","🧩","🎁","❤️","🔔","📚",
+  "🤖","🎬","🌍","✅","🏷️","💼","🗂️","🧲",
+];
 
 interface Skill {
   id: string;
@@ -102,11 +111,30 @@ export default function Admin() {
               <div className="grid grid-cols-[60px_1fr] gap-4">
                 <div>
                   <Label>Emoji</Label>
-                  <Input
-                    value={form.emoji}
-                    onChange={(e) => setForm((f) => ({ ...f, emoji: e.target.value }))}
-                    className="text-center text-lg"
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full h-10 text-2xl p-0"
+                      >
+                        {form.emoji}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[320px] p-3" align="start">
+                      <div className="grid grid-cols-8 gap-1">
+                        {EMOJI_OPTIONS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            className="h-9 w-9 flex items-center justify-center text-xl rounded hover:bg-accent cursor-pointer"
+                            onClick={() => setForm((f) => ({ ...f, emoji }))}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div>
                   <Label>Name</Label>
