@@ -192,7 +192,53 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
               },
               {
                 role: "assistant" as const,
-                content: "Here are two cold email examples I generated. Click the card above to preview them in the side panel. Does this direction look right?",
+                content: "",
+                type: "artifact" as const,
+                metadata: {
+                  artifact: {
+                    id: "demo-2",
+                    title: "Program Roadmap",
+                    preview: "Your 3-phase transformation roadmap with 9 steps.",
+                    assetType: "roadmap",
+                    content: {
+                      programName: "The Conversion Catalyst",
+                      description: "A 90-day system that helps B2B consultants attract premium clients, craft irresistible offers, and build predictable revenue — without cold outreach or paid ads.",
+                      phases: [
+                        {
+                          label: "Phase 1",
+                          name: "Foundation",
+                          steps: [
+                            { name: "Million Dollar Message", description: "Clarify exactly who you help, the problem you solve, and why you're the obvious choice." },
+                            { name: "Offer Architecture", description: "Design a premium offer stack that delivers transformation, not just information." },
+                            { name: "Pricing & Packaging", description: "Position your pricing to attract committed buyers and repel tire-kickers." },
+                          ],
+                        },
+                        {
+                          label: "Phase 2",
+                          name: "Content Engine",
+                          steps: [
+                            { name: "Lead Magnet", description: "Create an irresistible free resource that pre-qualifies your ideal clients." },
+                            { name: "Workshop Funnel", description: "Build a live workshop that converts attendees into high-ticket buyers." },
+                            { name: "Nurture Sequence", description: "Automate follow-up emails that build trust and drive applications." },
+                          ],
+                        },
+                        {
+                          label: "Phase 3",
+                          name: "Traffic & Scale",
+                          steps: [
+                            { name: "Organic Strategy", description: "Turn social content into a client acquisition machine with a daily posting system." },
+                            { name: "Paid Amplification", description: "Layer paid ads on top of proven organic content for predictable lead flow." },
+                            { name: "Referral Engine", description: "Systematize referrals so every happy client brings you two more." },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+              {
+                role: "assistant" as const,
+                content: "I've also drafted your program roadmap. Click it to see the full 3-phase visual. Does this direction look right?",
                 type: "options" as const,
                 metadata: {
                   options: ["Looks good — Continue", "Make changes"],

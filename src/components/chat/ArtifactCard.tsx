@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FileText, Maximize2, Copy, Download } from "lucide-react";
+import { FileText, Maximize2, Copy, Download, Map } from "lucide-react";
 import { useLayout } from "@/hooks/use-layout";
 import { useState } from "react";
 
@@ -19,6 +19,7 @@ const ICON_MAP: Record<string, typeof FileText> = {
   "lead-magnet": FileText,
   "landing-page": FileText,
   "email-sequence": FileText,
+  "roadmap": Map,
 };
 
 export function ArtifactCard({ artifact }: ArtifactCardProps) {
