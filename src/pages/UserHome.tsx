@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { motion } from "framer-motion";
+import React from "react";
 
 const ENGINES = [
   {
@@ -59,9 +60,9 @@ export default function UserHome() {
                     navigate(`/chat/${offerSkill.id}`);
                   }
                 }}
-                className={`group w-full text-left rounded-lg border border-border bg-card p-6 aspect-square flex flex-col transition-all duration-200 relative ${
+                className={`group w-full text-left rounded-lg border border-border bg-card p-6 flex flex-col transition-all duration-200 relative ${
                   engine.enabled
-                    ? "hover:border-primary/30 hover:shadow-sm cursor-pointer"
+                    ? "hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 cursor-pointer"
                     : "opacity-50 cursor-not-allowed"
                 }`}
               >
@@ -70,15 +71,21 @@ export default function UserHome() {
                     Coming Soon
                   </span>
                 )}
-                <div className="text-4xl mb-3">{engine.emoji}</div>
-                <h3 className="text-base font-semibold text-foreground mb-0.5">{engine.title}</h3>
+                <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center text-3xl mb-4">
+                  {engine.emoji}
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-0.5">{engine.title}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{engine.subtitle}</p>
-                <div className="flex items-center gap-1 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-4">
                   {engine.steps.map((step, i) => (
-                    <span key={step} className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                      {step}
-                      {i < engine.steps.length - 1 && <span className="text-border">→</span>}
-                    </span>
+                    <React.Fragment key={step}>
+                      <span className="px-2 py-0.5 rounded-md bg-muted/50 text-[11px] text-muted-foreground">
+                        {step}
+                      </span>
+                      {i < engine.steps.length - 1 && (
+                        <span className="text-muted-foreground/40 text-xs">→</span>
+                      )}
+                    </React.Fragment>
                   ))}
                 </div>
               </motion.button>
