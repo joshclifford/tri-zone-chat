@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Bot } from "lucide-react";
 
 interface InterviewMessageProps {
   role: "user" | "assistant";
@@ -31,11 +30,8 @@ export function InterviewMessage({ role, content, index }: InterviewMessageProps
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: 0.05 }}
-      className="mb-5 flex items-start gap-3"
+      className="mb-5 flex items-start pl-3"
     >
-      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-        <Bot className="h-4 w-4" />
-      </div>
       <div className="min-w-0 flex-1">
         <ReactMarkdown className="prose prose-base dark:prose-invert max-w-none">
           {content}
