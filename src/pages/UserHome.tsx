@@ -47,7 +47,7 @@ export default function UserHome() {
     <AppLayout>
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {ENGINES.map((engine, index) => (
               <motion.button
                 key={engine.title}
@@ -59,7 +59,7 @@ export default function UserHome() {
                     navigate(`/chat/${offerSkill.id}`);
                   }
                 }}
-                className={`group w-full text-left rounded-lg border border-border bg-card p-6 transition-all duration-200 relative ${
+                className={`group w-full text-left rounded-lg border border-border bg-card p-6 aspect-square flex flex-col transition-all duration-200 relative ${
                   engine.enabled
                     ? "hover:border-primary/30 hover:shadow-sm cursor-pointer"
                     : "opacity-50 cursor-not-allowed"
@@ -73,14 +73,11 @@ export default function UserHome() {
                 <div className="text-4xl mb-3">{engine.emoji}</div>
                 <h3 className="text-base font-semibold text-foreground mb-0.5">{engine.title}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{engine.subtitle}</p>
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-1 flex-wrap">
                   {engine.steps.map((step, i) => (
                     <span key={step} className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted text-[10px] font-medium">
-                        {i + 1}
-                      </span>
                       {step}
-                      {i < engine.steps.length - 1 && <span className="text-border ml-1">→</span>}
+                      {i < engine.steps.length - 1 && <span className="text-border">→</span>}
                     </span>
                   ))}
                 </div>
