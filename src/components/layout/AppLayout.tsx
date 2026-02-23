@@ -1,0 +1,40 @@
+import { ReactNode } from "react";
+import { LayoutProvider, useLayout } from "@/hooks/use-layout";
+import { LeftDrawer } from "./LeftDrawer";
+import { RightPanel } from "./RightPanel";
+import { CenterStream } from "./CenterStream";
+import { Menu } from "lucide-react";
+
+function LayoutInner({ children }: { children: ReactNode }) {
+  const { toggleLeftDrawer } = useLayout();
+
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-background">
+      <LeftDrawer />
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Minimal top bar */}
+        <header className="flex items-center h-12 px-3 border-b border-border bg-card/50 shrink-0">
+          <button
+            onClick={toggleLeftDrawer}
+            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
+          <span className="ml-3 text-sm font-semibold text-foreground tracking-tight">Growth OS</span>
+        </header>
+        <div className="flex flex-1 min-h-0">
+          <CenterStream>{children}</CenterStream>
+          <RightPanel />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AppLayout({ children }: { children: ReactNode }) {
+  return (
+    <LayoutProvider>
+      <LayoutInner>{children}</LayoutInner>
+    </LayoutProvider>
+  );
+}
