@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { Bot } from "lucide-react";
 
 interface InterviewMessageProps {
   role: "user" | "assistant";
@@ -10,20 +11,36 @@ interface InterviewMessageProps {
 export function InterviewMessage({ role, content, index }: InterviewMessageProps) {
   const isUser = role === "user";
 
+  if (isUser) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: 0.05 }}
+        className="mb-5 flex justify-end"
+      >
+        <span className="inline-block rounded-2xl bg-muted px-4 py-2.5 text-sm leading-relaxed text-foreground">
+          {content}
+        </span>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: 0.05 }}
-      className={`mb-5 ${isUser ? "text-right" : "text-left"}`}
+      className="mb-5 flex items-start gap-3"
     >
-      {isUser ? (
-        <span className="text-base leading-relaxed text-muted-foreground">{content}</span>
-      ) : (
+      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <Bot className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
         <ReactMarkdown className="prose prose-base dark:prose-invert max-w-none">
           {content}
         </ReactMarkdown>
-      )}
+      </div>
     </motion.div>
   );
 }
