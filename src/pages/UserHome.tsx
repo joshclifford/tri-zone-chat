@@ -46,8 +46,8 @@ export default function UserHome() {
   return (
     <AppLayout>
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {ENGINES.map((engine, index) => (
               <motion.button
                 key={engine.title}
