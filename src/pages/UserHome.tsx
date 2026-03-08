@@ -38,7 +38,7 @@ export default function UserHome() {
       const { data } = await supabase
         .from("skills")
         .select("id")
-        .eq("name", "Million Dollar Message")
+        .eq("name", "Messaging Reference")
         .single();
       return data;
     },
