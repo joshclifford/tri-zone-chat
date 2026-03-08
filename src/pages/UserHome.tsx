@@ -86,8 +86,8 @@ export default function UserHome() {
                     Coming Soon
                   </span>
                 )}
-                <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center text-3xl mb-4">
-                  {engine.emoji}
+                <div className={`w-14 h-14 rounded-xl ${engine.iconBg} flex items-center justify-center mb-4`}>
+                  <engine.icon className={`h-7 w-7 ${engine.iconColor}`} strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-0.5">{engine.title}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{engine.subtitle}</p>
