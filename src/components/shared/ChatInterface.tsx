@@ -322,16 +322,30 @@ Rules:
                 metadata: {
                   artifact: {
                     id: "demo-1",
-                    title: "Program Roadmap",
-                    preview: "Your 3-phase transformation roadmap with 9 steps.",
-                    assetType: "roadmap",
-                    content: buildRoadmapContent(roadmap),
+                    title: "Brand Profile",
+                    preview: "Your brand voice, ideal avatar, and positioning at a glance.",
+                    assetType: "brand-profile",
+                    content: {
+                      brandName: "ServicesThatScale",
+                      voice: {
+                        tone: "Direct, confident, no-fluff",
+                        personality: "Experienced operator who's been in the trenches",
+                        vocabulary: ["ROI-driven", "scalable", "proven", "high-ticket"],
+                      },
+                      avatar: {
+                        title: "Growth-Stage Service Provider",
+                        description: "B2B consultants and agency owners doing $10K–$50K/mo who want to break past a revenue ceiling",
+                        painPoints: ["Inconsistent lead flow", "Underpriced offers", "Trading time for money"],
+                        desires: ["Predictable pipeline", "Premium positioning", "Scalable delivery"],
+                      },
+                      positioning: "We help B2B service providers package and sell high-ticket offers using proven messaging frameworks.",
+                    },
                   },
                 },
               },
               {
                 role: "assistant" as const,
-                content: "Here's your program roadmap — click it to see the full 3-phase visual. You can ask me to change any phase names, step names, or descriptions and I'll update it live.",
+                content: "Here's your brand profile — click to see your voice, avatar, and positioning. Now let's look at your messaging toolkit:",
                 type: "text" as const,
               },
               {
@@ -341,19 +355,20 @@ Rules:
                 metadata: {
                   artifact: {
                     id: "demo-2",
-                    title: "Cold Emails",
-                    preview: "Two high-converting cold email examples ready to customize and send.",
-                    assetType: "email-sequence",
+                    title: "Messaging Reference",
+                    preview: "Common hooks, frameworks, and angle examples for your content.",
+                    assetType: "messaging-guide",
                     content: {
-                      emails: [
-                        {
-                          subject: "Quick question about {{company}}'s growth",
-                          preview: "Hi {{firstName}},\n\nI noticed {{company}} is scaling fast — congrats on the momentum.\n\nAt ServicesThatScale, we recently helped a similar company cut their customer acquisition cost by 40% in 90 days using a repositioned offer strategy.\n\nWould it make sense to chat for 15 minutes this week?\n\nBest,\nMike"
-                        },
-                        {
-                          subject: "Idea for {{company}} (took 2 min to put together)",
-                          preview: "Hi {{firstName}},\n\nI spent a couple minutes looking at {{company}}'s positioning and had an idea.\n\nMost companies in your space lead with features — but your customers are buying a transformation. A small messaging shift could make a big difference.\n\nWant me to send over a quick breakdown?\n\nCheers,\nMike"
-                        }
+                      hooks: [
+                        { type: "Contrarian", example: "Stop creating content. Start creating conversions." },
+                        { type: "Question", example: "What if your offer is the reason clients ghost you?" },
+                        { type: "Stat-led", example: "83% of service businesses are undercharging. Here's the fix." },
+                        { type: "Story", example: "I lost a $20K client because of one sentence in my pitch." },
+                      ],
+                      frameworks: [
+                        { name: "PAS", description: "Problem → Agitate → Solution", example: "Struggling to close high-ticket? Most consultants pitch features instead of outcomes. Lead with the transformation and watch close rates climb." },
+                        { name: "AIDA", description: "Attention → Interest → Desire → Action", example: "What if you could 3x your revenue without 3x-ing your workload? Our clients do it by repositioning their offer. Book a strategy call." },
+                        { name: "BAB", description: "Before → After → Bridge", example: "Before: chasing leads on LinkedIn for hours. After: inbound inquiries from ideal clients. Bridge: a messaging overhaul that takes 48 hours." },
                       ],
                     },
                   },
@@ -361,10 +376,10 @@ Rules:
               },
               {
                 role: "assistant" as const,
-                content: "Click either card to preview the full content. Does this direction look right?",
+                content: "Here's your messaging reference with hooks and frameworks. What do you think?",
                 type: "options" as const,
                 metadata: {
-                  options: ["Looks good — Continue", "Make changes"],
+                  options: ["Looks good — save it", "Make changes"],
                 },
               },
             ];
