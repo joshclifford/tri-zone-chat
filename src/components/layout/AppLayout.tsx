@@ -21,7 +21,7 @@ function LayoutInner({ children }: { children: ReactNode }) {
           >
             <Menu className="h-4 w-4" />
           </button>
-          <img src={customerEngineLogo} alt="Customer Engine OS" className="ml-3 h-5" style={{ filter: "brightness(0)" }} />
+          <span className="ml-3 text-sm font-bold text-foreground tracking-tight">GrowthOS</span>
         </header>
         <div className="flex flex-1 min-h-0">
           <div className="flex-1 flex flex-col min-w-0 h-full">

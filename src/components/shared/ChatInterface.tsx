@@ -40,34 +40,34 @@ interface RoadmapData {
 }
 
 const DEFAULT_ROADMAP: RoadmapData = {
-  programName: "The Conversion Catalyst",
-  description: "A 90-day system that helps B2B consultants attract premium clients, craft irresistible offers, and build predictable revenue.",
+  programName: "GrowthOS",
+  description: "A 90-day system: craft your offer, validate with a workshop, then automate with a funnel.",
   phases: [
     {
       label: "Phase 1",
-      name: "Foundation",
+      name: "Offer",
       steps: [
-        { name: "Million Dollar Message", description: "Clarify who you help and why you're the obvious choice." },
-        { name: "Offer Architecture", description: "Design a premium offer that delivers transformation." },
+        { name: "Million Dollar Message", description: "Clarify who you help and why you." },
+        { name: "Offer Architecture", description: "Design a premium, transformation-driven offer." },
         { name: "Pricing & Packaging", description: "Position pricing to attract committed buyers." },
       ],
     },
     {
       label: "Phase 2",
-      name: "Content Engine",
+      name: "Workshop",
       steps: [
-        { name: "Lead Magnet", description: "Create a free resource that pre-qualifies ideal clients." },
-        { name: "Workshop Funnel", description: "Build a live workshop that converts to buyers." },
-        { name: "Nurture Sequence", description: "Automate follow-up that builds trust and drives action." },
+        { name: "Workshop Content", description: "Build a live session that educates and converts." },
+        { name: "Delivery System", description: "Set up registration, reminders, and replay." },
+        { name: "Close Sequence", description: "Convert attendees into paying clients." },
       ],
     },
     {
       label: "Phase 3",
-      name: "Traffic & Scale",
+      name: "Funnel",
       steps: [
-        { name: "Organic Strategy", description: "Turn social content into a client acquisition system." },
-        { name: "Paid Amplification", description: "Layer paid ads on proven organic content." },
-        { name: "Referral Engine", description: "Systematize referrals from every happy client." },
+        { name: "Landing Pages", description: "High-converting pages for each step." },
+        { name: "Email Sequences", description: "Automate nurture and follow-up flows." },
+        { name: "Traffic Strategy", description: "Drive qualified leads into the funnel." },
       ],
     },
   ],
