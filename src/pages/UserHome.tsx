@@ -4,28 +4,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { motion } from "framer-motion";
 import React from "react";
+import { Gem, Settings, Radio } from "lucide-react";
 
 const ENGINES = [
   {
-    emoji: "💎",
     title: "Offer Engine",
     subtitle: "Foundation / Strategy",
     steps: ["Message", "Roadmap", "Model"],
     enabled: true,
+    icon: Gem,
+    iconColor: "text-amber-400",
+    iconBg: "bg-amber-400/10",
   },
   {
-    emoji: "⚙️",
     title: "Funnel Engine",
     subtitle: "Automation / Conversion",
     steps: ["Pages", "Sequences", "Traffic"],
     enabled: false,
+    icon: Settings,
+    iconColor: "text-sky-400",
+    iconBg: "bg-sky-400/10",
   },
   {
-    emoji: "📡",
     title: "Attention Engine",
     subtitle: "Visibility / Growth",
     steps: ["Content", "Distribution", "Amplify"],
     enabled: false,
+    icon: Radio,
+    iconColor: "text-emerald-400",
+    iconBg: "bg-emerald-400/10",
   },
 ];
 
@@ -79,8 +86,8 @@ export default function UserHome() {
                     Coming Soon
                   </span>
                 )}
-                <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center text-3xl mb-4">
-                  {engine.emoji}
+                <div className={`w-14 h-14 rounded-xl ${engine.iconBg} flex items-center justify-center mb-4`}>
+                  <engine.icon className={`h-7 w-7 ${engine.iconColor}`} strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-0.5">{engine.title}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{engine.subtitle}</p>
