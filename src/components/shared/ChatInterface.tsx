@@ -348,11 +348,11 @@ Rules:
                       emails: [
                         {
                           subject: "Quick question about {{company}}'s growth",
-                          preview: "Hi {{firstName}},\n\nI noticed {{company}} just expanded into {{market}} — congrats on the momentum.\n\nWe recently helped a similar company in your space cut their customer acquisition cost by 40% in 90 days using a repositioned offer strategy.\n\nWould it make sense to chat for 15 minutes this week to see if we could do something similar for you?\n\nEither way, excited to watch {{company}} grow.\n\nBest,\n{{yourName}}"
+                          preview: "Hi {{firstName}},\n\nI noticed {{company}} is scaling fast — congrats on the momentum.\n\nAt ServicesThatScale, we recently helped a similar company cut their customer acquisition cost by 40% in 90 days using a repositioned offer strategy.\n\nWould it make sense to chat for 15 minutes this week?\n\nBest,\nMike"
                         },
                         {
                           subject: "Idea for {{company}} (took 2 min to put together)",
-                          preview: "Hi {{firstName}},\n\nI spent a couple minutes looking at {{company}}'s positioning and had an idea that could help you stand out in {{market}}.\n\nMost companies in your space lead with features — but your customers are buying a transformation. A small messaging shift could make a big difference in conversion.\n\nI put together a quick breakdown. Want me to send it over?\n\nNo pressure either way.\n\nCheers,\n{{yourName}}"
+                          preview: "Hi {{firstName}},\n\nI spent a couple minutes looking at {{company}}'s positioning and had an idea.\n\nMost companies in your space lead with features — but your customers are buying a transformation. A small messaging shift could make a big difference.\n\nWant me to send over a quick breakdown?\n\nCheers,\nMike"
                         }
                       ],
                     },
