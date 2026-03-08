@@ -26,7 +26,7 @@ interface Turn {
 const TURNS: Turn[] = [
   {
     id: 1,
-    prompt: "Welcome to Customer Engine OS! Let's build your brand foundation. First — what does your business do? Tell me in a sentence or two.",
+    prompt: "Welcome to GrowthOS! Let's build your brand foundation. First — what does your business do? Tell me in a sentence or two.",
     type: "text",
   },
   {
