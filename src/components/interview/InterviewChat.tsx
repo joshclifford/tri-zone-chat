@@ -26,7 +26,7 @@ interface Turn {
 const TURNS: Turn[] = [
   {
     id: 1,
-    prompt: "Welcome to Customer Engine OS! Let's build your brand foundation. First — what does your business do? Tell me in a sentence or two.",
+    prompt: "Welcome to GrowthOS! Let's build your brand foundation. First — what does your business do? Tell me in a sentence or two.",
     type: "text",
   },
   {
@@ -214,7 +214,7 @@ export function InterviewChat() {
         <div className="mx-auto max-w-3xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-lg font-semibold text-foreground mb-1">Let's build your Customer Engine OS foundation</h1>
+            <h1 className="text-lg font-semibold text-foreground mb-1">Let's build your GrowthOS foundation</h1>
             <p className="text-sm text-muted-foreground">A quick 5-question interview to capture your brand voice & positioning.</p>
           </div>
 
