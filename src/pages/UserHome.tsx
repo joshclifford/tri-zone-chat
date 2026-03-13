@@ -2,8 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { InterviewChat } from "@/components/interview/InterviewChat";
-import { useAppState } from "@/hooks/use-app-state";
 import { motion } from "framer-motion";
 import React from "react";
 import { Gem, Settings, Radio } from "lucide-react";
@@ -40,7 +38,6 @@ const ENGINES = [
 
 export default function UserHome() {
   const navigate = useNavigate();
-  const { foundationLocked } = useAppState();
 
   const { data: offerSkill } = useQuery({
     queryKey: ["offer-engine-skill"],
@@ -53,15 +50,6 @@ export default function UserHome() {
       return data;
     },
   });
-
-  // Gate: send users through the brand foundation interview before they can use skills
-  if (!foundationLocked) {
-    return (
-      <AppLayout>
-        <InterviewChat />
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout>
