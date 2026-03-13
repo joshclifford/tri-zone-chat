@@ -7,6 +7,7 @@ import { ThinkingState } from "@/components/chat/ThinkingState";
 import { ArtifactCard } from "@/components/chat/ArtifactCard";
 import { StepDivider } from "@/components/chat/StepDivider";
 import { useLayout } from "@/hooks/use-layout";
+import { useAppState } from "@/hooks/use-app-state";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ChatMessage {
@@ -89,6 +90,7 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasFiredGreeting = useRef(false);
   const { openRightPanel, updateRightPanelContent, rightPanelOpen, rightPanelContent } = useLayout();
+  const { voiceProfile, positioning } = useAppState();
 
   // Helper to build roadmap artifact content object
   const buildRoadmapContent = useCallback((rm: RoadmapData) => ({
@@ -208,26 +210,25 @@ export function ChatInterface({ systemPrompt, skillId, conversationId: existingC
     return parts;
   }, []);
 
-  // Build the augmented system prompt with roadmap context
+  // Build the augmented system prompt with brand context + roadmap context
   const buildSystemPrompt = useCallback(() => {
-    const roadmapContext = `
+    // --- Brand Foundation (from interview) ---
+    let brandContext = "";
+    if (voiceProfile || positioning) {
+      brandContext = `\n\nUSER'S BRAND FOUNDATION — write in their voice, reference their audience throughout:\n`;
+      if (voiceProfile) {
+        brandContext += `Voice Profile:\n- Business: ${voiceProfile.businessDescription}\n- Hook angle: ${voiceProfile.hook}\n- Tone: ${voiceProfile.tone}\n- Differentiator: ${voiceProfile.angle}\n`;
+      }
+      if (positioning) {
+        brandContext += `Positioning:\n- Core angle: ${positioning.angle}\n- Ideal audience: ${positioning.audience}\n- What makes them different: ${positioning.differentiator}\n`;
+      }
+    }
 
-CURRENT ROADMAP STATE (this is the user's current program roadmap — you can update it):
-${JSON.stringify(roadmap, null, 2)}
+    // --- Live Roadmap State ---
+    const roadmapContext = `\n\nCURRENT ROADMAP STATE (this is the user's current program roadmap — you can update it):\n${JSON.stringify(roadmap, null, 2)}\n\nROADMAP UPDATE INSTRUCTIONS:\nWhen the user asks to change the roadmap (rename phases, rename steps, change descriptions, add/remove steps, rename the program, etc.), output a [ROADMAP_UPDATE:{...}] marker with the FULL updated roadmap JSON. The format must be:\n[ROADMAP_UPDATE:{"programName":"...","description":"...","phases":[{"label":"Phase 1","name":"...","steps":[{"name":"...","description":"..."},...]},{"label":"Phase 2","name":"...","steps":[...]},{"label":"Phase 3","name":"...","steps":[...]}]}]\n\nRules:\n- Keep step descriptions SHORT — max 12 words each\n- Keep all phases with the same number of steps (3 each) unless the user asks otherwise\n- Always output the COMPLETE roadmap in the update, not just changed parts\n- Include the marker inline in your response, then continue talking normally\n- Only output ROADMAP_UPDATE when the user actually wants to change the roadmap content\n`;
 
-ROADMAP UPDATE INSTRUCTIONS:
-When the user asks to change the roadmap (rename phases, rename steps, change descriptions, add/remove steps, rename the program, etc.), output a [ROADMAP_UPDATE:{...}] marker with the FULL updated roadmap JSON. The format must be:
-[ROADMAP_UPDATE:{"programName":"...","description":"...","phases":[{"label":"Phase 1","name":"...","steps":[{"name":"...","description":"..."},...]},{"label":"Phase 2","name":"...","steps":[...]},{"label":"Phase 3","name":"...","steps":[...]}]}]
-
-Rules:
-- Keep step descriptions SHORT — max 12 words each
-- Keep all phases with the same number of steps (3 each) unless the user asks otherwise
-- Always output the COMPLETE roadmap in the update, not just changed parts
-- Include the marker inline in your response, then continue talking normally
-- Only output ROADMAP_UPDATE when the user actually wants to change the roadmap content
-`;
-    return systemPrompt + roadmapContext;
-  }, [systemPrompt, roadmap]);
+    return brandContext + systemPrompt + roadmapContext;
+  }, [systemPrompt, roadmap, voiceProfile, positioning]);
 
   // Stream a response from the AI
   const streamResponse = useCallback(async (currentMessages: ChatMessage[]) => {
@@ -308,84 +309,6 @@ Rules:
             return copy;
           });
         }
-
-        // DEMO: inject mock artifact cards after the first AI response
-        setMessages((prev) => {
-          const hasArtifact = prev.some((m) => m.type === "artifact");
-          if (!hasArtifact && prev.filter((m) => m.role === "assistant").length === 1) {
-            return [
-              ...prev,
-              {
-                role: "assistant" as const,
-                content: "",
-                type: "artifact" as const,
-                metadata: {
-                  artifact: {
-                    id: "demo-1",
-                    title: "Brand Profile",
-                    preview: "Your brand voice, ideal avatar, and positioning at a glance.",
-                    assetType: "brand-profile",
-                    content: {
-                      brandName: "ServicesThatScale",
-                      voice: {
-                        tone: "Direct, confident, no-fluff",
-                        personality: "Experienced operator who's been in the trenches",
-                        vocabulary: ["ROI-driven", "scalable", "proven", "high-ticket"],
-                      },
-                      avatar: {
-                        title: "Growth-Stage Service Provider",
-                        description: "B2B consultants and agency owners doing $10K–$50K/mo who want to break past a revenue ceiling",
-                        painPoints: ["Inconsistent lead flow", "Underpriced offers", "Trading time for money"],
-                        desires: ["Predictable pipeline", "Premium positioning", "Scalable delivery"],
-                      },
-                      positioning: "We help B2B service providers package and sell high-ticket offers using proven messaging frameworks.",
-                    },
-                  },
-                },
-              },
-              {
-                role: "assistant" as const,
-                content: "Here's your brand profile — click to see your voice, avatar, and positioning. Now let's look at your messaging toolkit:",
-                type: "text" as const,
-              },
-              {
-                role: "assistant" as const,
-                content: "",
-                type: "artifact" as const,
-                metadata: {
-                  artifact: {
-                    id: "demo-2",
-                    title: "Messaging Reference",
-                    preview: "Common hooks, frameworks, and angle examples for your content.",
-                    assetType: "messaging-guide",
-                    content: {
-                      hooks: [
-                        { type: "Contrarian", example: "Stop creating content. Start creating conversions." },
-                        { type: "Question", example: "What if your offer is the reason clients ghost you?" },
-                        { type: "Stat-led", example: "83% of service businesses are undercharging. Here's the fix." },
-                        { type: "Story", example: "I lost a $20K client because of one sentence in my pitch." },
-                      ],
-                      frameworks: [
-                        { name: "PAS", description: "Problem → Agitate → Solution", example: "Struggling to close high-ticket? Most consultants pitch features instead of outcomes. Lead with the transformation and watch close rates climb." },
-                        { name: "AIDA", description: "Attention → Interest → Desire → Action", example: "What if you could 3x your revenue without 3x-ing your workload? Our clients do it by repositioning their offer. Book a strategy call." },
-                        { name: "BAB", description: "Before → After → Bridge", example: "Before: chasing leads on LinkedIn for hours. After: inbound inquiries from ideal clients. Bridge: a messaging overhaul that takes 48 hours." },
-                      ],
-                    },
-                  },
-                },
-              },
-              {
-                role: "assistant" as const,
-                content: "Here's your messaging reference with hooks and frameworks. What do you think?",
-                type: "options" as const,
-                metadata: {
-                  options: ["Looks good — save it", "Make changes"],
-                },
-              },
-            ];
-          }
-          return prev;
-        });
 
         const toSave = [...currentMessages, { role: "assistant" as const, content: cleanContent }];
         await saveConversation(toSave);
